@@ -1,0 +1,9 @@
+---
+- hosts: all
+  remote_user: debian
+  become: true
+  tasks:
+    - name: Create Docker network for promtail
+      community.docker.docker_network:
+        name: promtail
+        state: present

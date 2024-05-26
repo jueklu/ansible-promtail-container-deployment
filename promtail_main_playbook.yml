@@ -1,0 +1,13 @@
+---
+# Main playbook
+- name: Run Docker Installation Playbook
+  import_playbook: docker_installation.yml
+
+- name: Run Docker Network Playbook
+  import_playbook: docker_network.yml
+
+- name: Run Docker Network Playbook
+  import_playbook: docker_user.yml
+
+- name: Run Docker Network Playbook
+  import_playbook: promtail_var_log.yml

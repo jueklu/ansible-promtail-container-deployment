@@ -1,0 +1,15 @@
+services:
+  promtail:
+    image:  grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./promtail.yaml:/etc/promtail/docker-config.yaml
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/docker-config.yaml
+    restart: unless-stopped
+    networks:
+      - loki
+
+networks:
+  loki:
+    name: loki

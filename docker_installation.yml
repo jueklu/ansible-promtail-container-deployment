@@ -1,0 +1,49 @@
+---
+- hosts: all
+  remote_user: debian
+  become: true
+  vars:
+    docker_apt_release_channel: stable
+    docker_apt_arch: amd64
+    docker_apt_repository: "deb [arch={{ docker_apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} {{ docker_apt_release_channel }}"
+    docker_apt_gpg_key: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+
+  tasks:
+    - name: Install packages using apt
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg2
+          - software-properties-common
+        state: present
+        cache_valid_time: 86400
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: "{{ docker_apt_gpg_key }}"
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: "{{ docker_apt_repository }}"
+        state: present
+        update_cache: true
+
+    - name: Install Docker
+      apt:
+        name: docker-ce,docker-ce-cli,containerd.io,docker-buildx-plugin,docker-compose-plugin
+        state: present
+
+    - name: Run and enable docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add debian user to the docker group
+      ansible.builtin.user:
+        name: debian
+        groups: docker
+        append: yes

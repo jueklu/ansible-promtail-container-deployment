@@ -1,0 +1,21 @@
+---
+- hosts: all
+  remote_user: debian
+  become: yes
+  gather_facts: no
+  vars:
+    docker_network: "promtail"
+  tasks:
+    - name: Get infos on container
+      docker_container_info:
+        name: "{{ docker_network }}"
+      register: result
+
+    - name: Does container exist?
+      debug:
+        msg: "The container {{ 'exists' if result.exists else 'does not exist' }}"
+
+    - name: Print information about container
+      debug:
+        var: result.container
+      when: result.exists

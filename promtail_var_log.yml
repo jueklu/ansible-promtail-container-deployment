@@ -1,0 +1,49 @@
+---
+- hosts: all
+  remote_user: debian
+  become: yes
+  vars:
+    source_files_directory: "/home/debian/ansible_promtail_var_log"
+
+  tasks:
+    - name: Ensure the /opt/promtail directory exists
+      ansible.builtin.file:
+        path: /opt/promtail
+        state: directory
+        mode: '0755'
+        owner: docker-system
+        group: docker
+
+    - name: Gather facts about promtail.yaml and docker-compose_var-log.yml
+      ansible.builtin.stat:
+        path: "/opt/promtail/{{ item }}"
+      register: file_stats
+      loop:
+        - promtail.yaml
+        - docker-compose_var-log.yml
+
+    - name: Copy files to /opt/promtail if they do not exist
+      ansible.builtin.copy:
+        src: "{{ source_files_directory }}/{{ item.item }}"
+        dest: "/opt/promtail/{{ item.item }}"
+        owner: docker-system
+        group: docker
+        mode: '0644'
+      loop: "{{ file_stats.results }}"
+      when: not item.stat.exists
+
+    - name: Ensure /opt/promtail ownership is set
+      ansible.builtin.file:
+        path: /opt/promtail
+        state: directory
+        owner: docker-system
+        group: docker
+        recurse: yes
+
+    - name: Docker Compose up -d
+      ansible.builtin.shell: |
+        sudo -u docker-system docker compose -f /opt/promtail/docker-compose_var-log.yml up -d
+      become: yes
+      args:
+        chdir: /opt/promtail
+        executable: /bin/bash

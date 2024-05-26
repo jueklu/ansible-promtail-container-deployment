@@ -1,0 +1,30 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://192.168.30.20:3102/loki/api/v1/push
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets: ['localhost']
+        labels:
+          job: 'varlogs'
+          __path__: /var/log/*log
+          host: 'ubuntu-01'    
+
+      - targets: ['localhost']
+        labels:
+          bare_metal_webapps: 'nginx-logs'
+          __path__: /var/log/nginx/*.log
+          host: 'ubuntu-01'
+
+      - targets: ['localhost']
+        labels:
+          bare_metal_webapps: 'apache-logs'
+          __path__: /var/log/apache2/*.log
+          host: 'ubuntu-01'
